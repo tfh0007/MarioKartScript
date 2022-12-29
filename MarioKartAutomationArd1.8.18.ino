@@ -8,7 +8,7 @@ const int joystickY  = A1;
 const int joyStickButtonPress = 1023;
 const int joyStickLowThreashold = 300;
 const int joyStickHighThreashold = 650;
-const int validScriptNums[8] {1, 2, 3, 4, 5, 6, 7, 8};
+const int validScriptNums[10] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 int lastButtonPress = -1;
 int curScriptNum = 1;
 int confirmScriptNum = false;
@@ -53,11 +53,12 @@ void setup()
   pinMode(joystickY, INPUT);
   pinMode(touchSensor,INPUT);
   pinMode(buzzer, OUTPUT);
-  tm.display(3, curScriptNum);
+  DisplayFullTwoDigitNumber(curScriptNum);
 }
 
 void waitForScriptSelection()
 {
+  digitalWrite(LED_BUILTIN,HIGH);
   //Serial.println("Press a Button:");
 
   // Set the arduino to wait for input
@@ -69,7 +70,6 @@ void waitForScriptSelection()
     if (joyStickXValue == joyStickButtonPress)
     {
       // Serial.println("Inner Button Pressed");
-      // resetClock();
       tm.display(3, 10);
 
       // 2000 to 5000 is best frequency for humans
@@ -85,7 +85,7 @@ void waitForScriptSelection()
     if (joyStickYValue < joyStickLowThreashold && curScriptNum - 1 > 0)
     {
       curScriptNum = curScriptNum - 1;
-      tm.display(3, curScriptNum);
+      DisplayFullTwoDigitNumber(curScriptNum);
       waitForInput = false;
       lastButtonPress = 3;
     }
@@ -93,7 +93,7 @@ void waitForScriptSelection()
     else if (joyStickYValue > joyStickHighThreashold && curScriptNum + 1 < 16)
     {
       curScriptNum = curScriptNum + 1;
-      tm.display(3, curScriptNum);
+      DisplayFullTwoDigitNumber(curScriptNum);
       waitForInput = false;
       lastButtonPress = 4;
     }
@@ -120,6 +120,7 @@ void waitForScriptSelection()
     delay(200);
 
   }
+  digitalWrite(LED_BUILTIN,LOW);
 
   waitForInput = true;
 
@@ -145,59 +146,59 @@ void DisplayFullTwoDigitNumber(int item)
   ClearDisplay();
   
   if (item < 10) {
-    tm.display(2, item);
+    tm.display(3, item);
   }
   else if (item < 20)
   {
-    tm.display(1, 1);
-    tm.display(2, item - 10);
+    tm.display(2, 1);
+    tm.display(3, item - 10);
   }
   else if (item < 30)
   {
-    tm.display(1, 2);
-    tm.display(2, item - 20);
+    tm.display(2, 2);
+    tm.display(3, item - 20);
 
   }
   else if (item < 40)
   {
     tm.display(2, 3);
-    tm.display(2, item - 30);
+    tm.display(3, item - 30);
 
   }
   else if (item < 50)
   {
     tm.display(2, 4);
-    tm.display(2, item - 40);
+    tm.display(3, item - 40);
 
   }
   else if (item < 60)
   {
     tm.display(2, 5);
-    tm.display(2, item - 50);
+    tm.display(3, item - 50);
 
   }
   else if (item < 70)
   {
     tm.display(2, 6);
-    tm.display(2, item - 60);
+    tm.display(3, item - 60);
 
   }
   else if (item < 80)
   {
     tm.display(2, 7);
-    tm.display(2, item - 70);
+    tm.display(3, item - 70);
 
   }
   else if (item < 90)
   {
     tm.display(2, 8);
-    tm.display(2, item - 80);
+    tm.display(3, item - 80);
 
   }
   else if (item < 100)
   {
     tm.display(2, 9);
-    tm.display(2, item - 90);
+    tm.display(3, item - 90);
 
   }
 
@@ -207,7 +208,8 @@ void DisplayFullTwoDigitNumber(int item)
 void ManualControllerInput()
 {
   //delay(2000);
-  tm.clearDisplay();
+  ClearDisplay();
+  ClearDisplay();
   //Serial.println("Press a Button:");
   lastButtonPress = -1;
   
@@ -217,9 +219,25 @@ void ManualControllerInput()
   WaitForInput();
 }
 
+void WaitForSinglePress() 
+{
+  while (true) 
+  {
+    int joyStickXValue = analogRead(joystickX);
+    DisplayForAll(10);
+    if (joyStickXValue > 1000)
+    {
+      break;
+    }
+    delay(100);
+  }
+  
+}
+
 void WaitForInput() {
   ClearDisplay();
-  delay(500);
+  ClearDisplay();
+  tm.display(0,10);
   tm.display(0,10);
   while (true) {
     int joyStickXValue = analogRead(joystickX);
@@ -311,6 +329,8 @@ void WaitForInput() {
 void WaitForAlternateInput() 
 {
   ClearDisplay();
+  ClearDisplay();
+  tm.display(0,11);
   tm.display(0,11);
     while (true) {
     int joyStickXValue = analogRead(joystickX);
@@ -396,10 +416,8 @@ void WaitForAlternateInput()
         joyStickYValue = analogRead(joystickY);
       }
     }
-
-   ClearDisplay();
-   tm.display(0,10);
   }
+  tm.display(0,10);
 }
 
 void runMainProgram()
@@ -433,6 +451,12 @@ void runMainProgram()
   else if (curScriptNum == 8) {
     AutomatedSinglePlayerSelection();
   }
+  else if (curScriptNum == 9) {
+    AutomatedMultiplayerSelection();
+  }
+  else if (curScriptNum == 10) {
+    AutomatedMapSelection();
+  }
 
 
 }
@@ -464,6 +488,7 @@ void Automated1PlayerPairing() {
       pushButton(Button::A,1000);
       // Now that the controller is paired as the first player we need to go back to the switch menu
       pushButton(Button::A,1000);
+      //delay(1000);
       
       pushButton(Button::B,500);
       //Now we can go back to th main menu of the switch
@@ -478,6 +503,7 @@ void AutomatedCharacterSelection()
   delay(500);
   // Clear out display
   ClearDisplay();
+  ClearDisplay();
   
   int randomRow = random(0, 7);
   int randomCol = random(0, 8);
@@ -487,6 +513,8 @@ void AutomatedCharacterSelection()
   int curCol = 0;
   tm.display(1, randomRow);
   tm.display(2, randomCol);
+  tm.display(0, 16);
+  tm.display(3, 16);
 
   // Now we need to navigate to the correct square
         while(curRow != randomRow || curCol != randomCol) {
@@ -534,6 +562,10 @@ void AutomatedCharacterSelection()
             pushHat(Hat::UP, 50);
             curRow = curRow - 1;
           }
+          tm.display(1, randomRow);
+          tm.display(2, randomCol);
+          tm.display(0, 16);
+          tm.display(3, 16);
         }
         pushButton(Button::A, 50); // Select the item
   // Some characters have multiple options --> Let's select the first one
@@ -542,6 +574,7 @@ void AutomatedCharacterSelection()
   delay(2000);
 
   // Clear out display
+  ClearDisplay();
   ClearDisplay();
 
 }
@@ -561,6 +594,7 @@ void AutomatedKartSelection()
   // Clear out display
   delay(200);
   ClearDisplay();
+  ClearDisplay();
   
   // We always start with kart selection
   
@@ -569,15 +603,17 @@ void AutomatedKartSelection()
   for(int i = 0; i < 3; i++) {
     int randomNum = random(0, 31);
     
+    DisplayFullTwoDigitNumber(randomNum);
+    
     for(int j = 0; j < randomNum; j++) {
       pushHat(Hat::DOWN, 25);
     }
     pushButton(Button::A, 50); // Now we move to the next one
-
+    ClearDisplay();
+    ClearDisplay();
   }
   // Now we select this option
   pushButton(Button::A, 25);
- characterAlreadySelected = false;
 }
 
 void AutomatedMenuSelection() {
@@ -595,8 +631,12 @@ void AutomatedMenuSelection() {
     }
    */
 
+   ClearDisplay();
+   ClearDisplay();
+
    // Row 1 Selection
    int randomNum = random(0, 6);
+   tm.display(3,randomNum);
    int curNum = 0;
    for(int i = 0; i < randomNum; i++) {
     pushHat(Hat::RIGHT, 25);
@@ -605,6 +645,7 @@ void AutomatedMenuSelection() {
     
    // Row 2 Selection
    //randomNum = random(0, 3);
+   //tm.display(3,randomNum);
    //curNum = 0;
    //for(int i = 0; i < randomNum; i++) {
     //pushHat(Hat::RIGHT, 25);
@@ -613,6 +654,7 @@ void AutomatedMenuSelection() {
 
    // Row 3 Selection
    //randomNum = random(0, 10);
+   //tm.display(3,randomNum);
    //curNum = 0;
    //for(int i = 0; i < randomNum; i++) {
     //pushHat(Hat::RIGHT, 25);
@@ -622,6 +664,7 @@ void AutomatedMenuSelection() {
    // Row 4-5 Selection
    for (int j = 0; j < 2; j++) {
      randomNum = random(0, 4);
+     tm.display(3,randomNum);
      curNum = 0;
      for(int i = 0; i < randomNum; i++) {
       pushHat(Hat::RIGHT, 25);
@@ -631,6 +674,7 @@ void AutomatedMenuSelection() {
 
    // Row 6 selection
    //randomNum = random(0, 4);
+   //tm.display(3,randomNum);
      //curNum = 0;
      //for(int i = 0; i < randomNum; i++) {
       //pushHat(Hat::RIGHT, 25);
@@ -640,6 +684,7 @@ void AutomatedMenuSelection() {
 
    // Row 7 Selection
    randomNum = random(0, 9);
+   tm.display(3,randomNum);
    curNum = 0;
    for(int i = 0; i < randomNum; i++) {
     pushHat(Hat::RIGHT, 25);
@@ -653,6 +698,7 @@ void AutomatedMenuSelection() {
 void AutomatedItemSelection()
 {
   // Clear out the display
+  ClearDisplay();
   ClearDisplay();
 
   // We are going to start from the ok button
@@ -814,6 +860,7 @@ void AutomatedItemSelection()
 
   Serial.println("}");
   ClearDisplay();
+  ClearDisplay();
 
   tm.display(0, 10);
   tm.display(1, 10);
@@ -885,12 +932,218 @@ void AutomatedSinglePlayerSelection()
   delay(1000);
   AutomatedItemSelection();
   delay(1000);
+  AutomatedMapSelection();
+  delay(1000);
   // Start the game
   pushButton(Button::A,25);
   
   AutomatedRepairingToUser();
   
 }
+int InputOfPlayers() 
+{
+  int numberOfPlayers = 2;
+  ClearDisplay();
+  ClearDisplay();
+  
+  delay(500);
+  // we want to ignore first press
+  while(analogRead(joystickX) == joyStickButtonPress) {
+    delay(500);
+    continue;
+  }
+  
+  while (true) {
+    tm.display(0,numberOfPlayers);
+    int joyStickXValue = analogRead(joystickX);
+    int joyStickYValue = analogRead(joystickY);
+    
+
+    // Button inner press (selection confirmed)
+    if (joyStickXValue == joyStickButtonPress)
+    {
+      // Serial.println("Inner Button Pressed");
+      // resetClock();
+      tm.display(3, 10);
+
+      // 2000 to 5000 is best frequency for humans
+      tone(buzzer, 2000, 1000); // activate the buzzer
+      break;
+    }
+
+    // Down button press
+    if (joyStickYValue < joyStickLowThreashold && numberOfPlayers - 1 > 1)
+    {
+      numberOfPlayers = numberOfPlayers - 1;
+      tm.display(0, numberOfPlayers);
+    }
+    // Up button press
+    else if (joyStickYValue > joyStickHighThreashold && numberOfPlayers + 1 < 5)
+    {
+      numberOfPlayers = numberOfPlayers + 1;
+      tm.display(0, numberOfPlayers);
+    }
+    
+    delay(200);
+
+  }
+  return numberOfPlayers;
+}
+
+void AutomatedMapSelection() {
+
+  
+  ClearDisplay();
+  ClearDisplay();
+  int randomMapType = random(0,2);
+  tm.display(3, randomMapType);
+
+  if(randomMapType == 1) 
+  {
+    pushButton(Button::L,25);
+    delay(500);
+  }
+  ClearDisplay();
+  ClearDisplay();
+
+  int randomRow = random(0,1);
+  int randomCol = random(0,6);
+  tm.display(2, randomRow);
+  tm.display(3, randomCol);
+  int curRow = 0;
+  int curCol = 0;
+  // We need to start at the top row
+  pushHat(Hat::DOWN, 25);
+  pushHat(Hat::UP, 25);
+
+  // Now we can pick the random square
+  tm.display(2, randomRow);
+  tm.display(3, randomCol);
+  // Now we need to navigate to the correct square
+  while(curRow != randomRow || curCol != randomCol) {
+    
+     // UP_LEFT
+    if(curRow > randomRow && curCol > randomCol) {
+      pushHat(Hat::UP_LEFT, 50);
+      curRow--;
+      curCol--;
+    }
+    // UP_RIGHT
+    else if (curRow > randomRow && curCol < randomCol) {
+      pushHat(Hat::UP_RIGHT, 50);
+      curRow--;
+      curCol++;
+    }
+    // DOWN_RIGHT
+    else if (curRow < randomRow && curCol < randomCol) {
+      pushHat(Hat::DOWN_RIGHT, 50);
+      curRow++;
+      curCol++;
+    }
+    // DOWN_LEFT
+    else if (curRow < randomRow && curCol > randomCol) {
+      pushHat(Hat::DOWN_LEFT, 50);
+      curRow ++;
+      curCol --;
+    }
+    
+    // RIGHT
+    if (curCol < randomCol) {
+      pushHat(Hat::RIGHT, 50);
+      curCol = curCol+1;
+    }
+    // LEFT
+    else if (curCol > randomCol) {
+      pushHat(Hat::LEFT, 50);
+      curCol = curCol- 1;
+    }
+    // DOWN
+    if (curRow < randomRow) {
+      pushHat(Hat::DOWN, 50);
+      curRow = curRow + 1;
+    }
+    // UP
+    else if (curRow > randomRow) {
+      pushHat(Hat::UP, 50);
+      curRow = curRow - 1;
+    }
+  }
+  pushButton(Button::A, 50); // Select the Cup
+
+  int randomTrackNum = random(0,4);
+  tm.display(3, randomTrackNum);
+  pushHat(Hat::RIGHT, 50,randomTrackNum);
+
+  pushButton(Button::A, 50); // Select the Track
+
+  // We may have selected a track that does not exist so click for the other grouping of tracks and select again
+  pushButton(Button::L,25);
+  pushButton(Button::A, 500); // Select the Cup
+  pushHat(Hat::RIGHT, 50,randomTrackNum);
+
+  pushButton(Button::A, 50); // Select the Track
+  ClearDisplay();
+  ClearDisplay();
+        
+        
+  
+  
+  
+  
+}
+
+void AutomatedMultiplayerSelection() 
+{
+  // We need to ask about the numer of players for the multiplayer
+  int numberOfPlayers = InputOfPlayers();
+  ClearDisplay();
+  ClearDisplay();
+  
+  // Make sure the controller is paired
+  pushButton(Button::Y, 50);
+  delay(1000);
+  
+  // Assumes we start at the main menu
+  Automated1PlayerPairing();
+  delay(1000);
+
+  
+  // We start at 2 player mode
+  int rightPresses = numberOfPlayers - 2;
+  pushHat(Hat::RIGHT, 200,rightPresses);
+  delay(1000);
+  
+  // We need to click for multiplayer
+  pushButton(Button::A,25);
+  delay(2000);
+  
+  //Click to enter the game mode
+  pushButton(Button::A,25);
+
+  // Automatically pair as player 1
+  pushButton(Button::A,1500);
+  WaitForSinglePress();
+  pushButton(Button::A,25);
+  delay(1000);
+  AutomatedCharacterSelection();
+  WaitForSinglePress();
+  delay(1000);
+  AutomatedKartSelection();
+  WaitForSinglePress();
+  delay(1000);
+  AutomatedMenuSelection();
+  delay(1000);
+  AutomatedItemSelection();
+  delay(1000);
+  AutomatedMapSelection();
+  delay(1000);
+  // Start the game
+  pushButton(Button::A,25);
+  
+  AutomatedRepairingToUser();
+}
+
+
 
 void buttonMashing()
 {
@@ -909,6 +1162,7 @@ void buttonMashing()
 void loop() {
   // put your main code here, to run repeatedly:
   noTone(buzzer);
+  digitalWrite(LED_BUILTIN,LOW);
 
   //digitalWrite(buzzer,LOW);
   //Serial.print("X: ");
@@ -950,10 +1204,8 @@ void loop() {
     {
       // Display Error
       // Clear display
-      tm.display(0, 16);
-      tm.display(1, 16);
-      tm.display(2, 16);
-      tm.display(3, 16);
+      ClearDisplay();
+      ClearDisplay();
 
       delay(1000);
 
@@ -966,8 +1218,9 @@ void loop() {
 
     }
 
-    tm.clearDisplay();
+    ClearDisplay();
+    ClearDisplay();
     confirmScriptNum = false;
-    tm.display(3, curScriptNum);
+    DisplayFullTwoDigitNumber(curScriptNum);
   }
 }
