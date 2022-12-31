@@ -8,7 +8,7 @@ const int joystickY  = A1;
 const int joyStickButtonPress = 1023;
 const int joyStickLowThreashold = 300;
 const int joyStickHighThreashold = 650;
-const int validScriptNums[10] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+const int validScriptNums[12] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
 int lastButtonPress = -1;
 int curScriptNum = 1;
 int confirmScriptNum = false;
@@ -41,7 +41,6 @@ const int touchSensor = 4;
 
 void setup()
 {
-  pinMode(LED_BUILTIN, OUTPUT);
   pushButton(Button::B, 500, 5); //turns on the controller by pressing B(any button works)
 
   // Display clock setup
@@ -58,7 +57,6 @@ void setup()
 
 void waitForScriptSelection()
 {
-  digitalWrite(LED_BUILTIN,HIGH);
   //Serial.println("Press a Button:");
 
   // Set the arduino to wait for input
@@ -90,7 +88,7 @@ void waitForScriptSelection()
       lastButtonPress = 3;
     }
     // Up button press
-    else if (joyStickYValue > joyStickHighThreashold && curScriptNum + 1 < 16)
+    else if (joyStickYValue > joyStickHighThreashold && curScriptNum + 1 < 100)
     {
       curScriptNum = curScriptNum + 1;
       DisplayFullTwoDigitNumber(curScriptNum);
@@ -120,7 +118,6 @@ void waitForScriptSelection()
     delay(200);
 
   }
-  digitalWrite(LED_BUILTIN,LOW);
 
   waitForInput = true;
 
@@ -457,12 +454,20 @@ void runMainProgram()
   else if (curScriptNum == 10) {
     AutomatedMapSelection();
   }
+  else if (curScriptNum == 11) {
+    AutomaticallyTurnOffSwitch();
+  }
+  else if(curScriptNum == 12) 
+  {
+    AutomaticallyCloseGame();
+  }
 
 
 }
 
 void Automated1PlayerPairing() {
-
+  // Make sure the switch is connected to the Arduino
+  pushButton(Button::L,50);
   
   // We need to activate the switch menu
     pushButton(Button::HOME,500);
@@ -1072,14 +1077,21 @@ void AutomatedMapSelection() {
 
   int randomTrackNum = random(0,4);
   tm.display(3, randomTrackNum);
-  pushHat(Hat::RIGHT, 50,randomTrackNum);
+  delay(1000);
+  for(int i = 0; i < randomTrackNum; i++) 
+  {
+    pushHat(Hat::RIGHT, 200);
+  }
 
   pushButton(Button::A, 50); // Select the Track
 
   // We may have selected a track that does not exist so click for the other grouping of tracks and select again
   pushButton(Button::L,25);
   pushButton(Button::A, 500); // Select the Cup
-  pushHat(Hat::RIGHT, 50,randomTrackNum);
+  for(int i = 0; i < randomTrackNum; i++) 
+  {
+    pushHat(Hat::RIGHT, 200);
+  }
 
   pushButton(Button::A, 50); // Select the Track
   ClearDisplay();
@@ -1143,6 +1155,42 @@ void AutomatedMultiplayerSelection()
   AutomatedRepairingToUser();
 }
 
+void AutomaticallyTurnOffSwitch() 
+{
+
+  pushButton(Button::L);
+  // Show the delay on the screen 
+  int timer = 5;
+
+  while(timer > 0) {
+    DisplayFullTwoDigitNumber(timer);
+    timer--;
+    delay(1000);   
+  }
+
+  holdButton(Button::HOME,3000);
+  pushButton(Button::A,500);
+}
+
+void AutomaticallyCloseGame() 
+{
+  pushButton(Button::L,50);
+  // Show the delay on the screen 
+  int timer = 5;
+
+  while(timer > 0) {
+    DisplayFullTwoDigitNumber(timer);
+    timer--;
+    delay(1000);   
+  }
+
+  pushButton(Button::HOME,50);
+  delay(2000);
+  pushButton(Button::X,50);
+  delay(1000);
+  pushButton(Button::A,50);
+}
+
 
 
 void buttonMashing()
@@ -1162,7 +1210,6 @@ void buttonMashing()
 void loop() {
   // put your main code here, to run repeatedly:
   noTone(buzzer);
-  digitalWrite(LED_BUILTIN,LOW);
 
   //digitalWrite(buzzer,LOW);
   //Serial.print("X: ");
