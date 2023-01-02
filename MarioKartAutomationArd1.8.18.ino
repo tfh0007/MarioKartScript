@@ -641,11 +641,11 @@ void AutomatedMenuSelection() {
 
    // Row 1 Selection
    int randomNum = random(0, 6);
-   tm.display(3,randomNum);
+   //tm.display(3,randomNum);
    int curNum = 0;
-   for(int i = 0; i < randomNum; i++) {
-    pushHat(Hat::RIGHT, 25);
-   }
+   // for(int i = 0; i < randomNum; i++) {
+    // pushHat(Hat::RIGHT, 25);
+   // }
    pushHat(Hat::DOWN, 50);
     
    // Row 2 Selection
@@ -688,12 +688,12 @@ void AutomatedMenuSelection() {
    //}
 
    // Row 7 Selection
-   randomNum = random(0, 9);
-   tm.display(3,randomNum);
-   curNum = 0;
-   for(int i = 0; i < randomNum; i++) {
-    pushHat(Hat::RIGHT, 25);
-   }
+   //randomNum = random(0, 9);
+   //tm.display(3,randomNum);
+   //curNum = 0;
+   //for(int i = 0; i < randomNum; i++) {
+    //pushHat(Hat::RIGHT, 25);
+   //}
    delay(500);
    pushButton(Button::A, 50); // Confirm the settings
    // delay(1000);
@@ -941,6 +941,13 @@ void AutomatedSinglePlayerSelection()
   delay(1000);
   // Start the game
   pushButton(Button::A,25);
+
+  int timer = 8;
+  while(timer > 0) {
+    DisplayFullTwoDigitNumber(timer);
+    timer--;
+    delay(1000);
+  }
   
   AutomatedRepairingToUser();
   
@@ -1002,105 +1009,94 @@ void AutomatedMapSelection() {
   ClearDisplay();
   int randomMapType = random(0,2);
   tm.display(3, randomMapType);
+  pushButton(Button::L,25,randomMapType);
+  delay(500);
+    
+  ClearDisplay();
+  ClearDisplay();
+  for(int i =0; i < 2; i++) {
 
-  if(randomMapType == 1) 
-  {
-    pushButton(Button::L,25);
+    int randomRow = random(0,2);
+    int randomCol = random(0,6);
+    tm.display(2, randomRow);
+    tm.display(3, randomCol);
+    int curRow = 0;
+    int curCol = 0;
+    // We need to start at the top row
+    pushHat(Hat::DOWN, 25);
+    delay(300);
+    pushHat(Hat::UP, 25);
+  
+    // Now we can pick the random square
+    tm.display(2, randomRow);
+    tm.display(3, randomCol);
+    // Now we need to navigate to the correct square
+    while(curRow != randomRow || curCol != randomCol) {
+      
+       // UP_LEFT
+      if(curRow > randomRow && curCol > randomCol) {
+        pushHat(Hat::UP_LEFT, 50);
+        curRow--;
+        curCol--;
+      }
+      // UP_RIGHT
+      else if (curRow > randomRow && curCol < randomCol) {
+        pushHat(Hat::UP_RIGHT, 50);
+        curRow--;
+        curCol++;
+      }
+      // DOWN_RIGHT
+      else if (curRow < randomRow && curCol < randomCol) {
+        pushHat(Hat::DOWN_RIGHT, 50);
+        curRow++;
+        curCol++;
+      }
+      // DOWN_LEFT
+      else if (curRow < randomRow && curCol > randomCol) {
+        pushHat(Hat::DOWN_LEFT, 50);
+        curRow ++;
+        curCol --;
+      }
+      
+      // RIGHT
+      if (curCol < randomCol) {
+        pushHat(Hat::RIGHT, 50);
+        curCol = curCol+1;
+      }
+      // LEFT
+      else if (curCol > randomCol) {
+        pushHat(Hat::LEFT, 50);
+        curCol = curCol- 1;
+      }
+      // DOWN
+      if (curRow < randomRow) {
+        pushHat(Hat::DOWN, 50);
+        curRow = curRow + 1;
+      }
+      // UP
+      else if (curRow > randomRow) {
+        pushHat(Hat::UP, 50);
+        curRow = curRow - 1;
+      }
+    }
+    pushButton(Button::A, 50); // Select the Cup
+  
+    int randomTrackNum = random(0,4);
+    tm.display(3, randomTrackNum);
+    delay(1000);
+    for(int i = 0; i < randomTrackNum; i++) 
+    {
+      pushHat(Hat::RIGHT, 200);
+    }
+  
+    pushButton(Button::A, 50); // Select the Track
     delay(500);
+    pushButton(Button::A, 500); // Start the race
+    ClearDisplay();
+    ClearDisplay();
+    pushButton(Button::A, 500); // Close the track does not exist window
+    pushButton(Button::L, 1000); // We may have clicked a course that does not exist yet
   }
-  ClearDisplay();
-  ClearDisplay();
-
-  int randomRow = random(0,1);
-  int randomCol = random(0,6);
-  tm.display(2, randomRow);
-  tm.display(3, randomCol);
-  int curRow = 0;
-  int curCol = 0;
-  // We need to start at the top row
-  pushHat(Hat::DOWN, 25);
-  pushHat(Hat::UP, 25);
-
-  // Now we can pick the random square
-  tm.display(2, randomRow);
-  tm.display(3, randomCol);
-  // Now we need to navigate to the correct square
-  while(curRow != randomRow || curCol != randomCol) {
-    
-     // UP_LEFT
-    if(curRow > randomRow && curCol > randomCol) {
-      pushHat(Hat::UP_LEFT, 50);
-      curRow--;
-      curCol--;
-    }
-    // UP_RIGHT
-    else if (curRow > randomRow && curCol < randomCol) {
-      pushHat(Hat::UP_RIGHT, 50);
-      curRow--;
-      curCol++;
-    }
-    // DOWN_RIGHT
-    else if (curRow < randomRow && curCol < randomCol) {
-      pushHat(Hat::DOWN_RIGHT, 50);
-      curRow++;
-      curCol++;
-    }
-    // DOWN_LEFT
-    else if (curRow < randomRow && curCol > randomCol) {
-      pushHat(Hat::DOWN_LEFT, 50);
-      curRow ++;
-      curCol --;
-    }
-    
-    // RIGHT
-    if (curCol < randomCol) {
-      pushHat(Hat::RIGHT, 50);
-      curCol = curCol+1;
-    }
-    // LEFT
-    else if (curCol > randomCol) {
-      pushHat(Hat::LEFT, 50);
-      curCol = curCol- 1;
-    }
-    // DOWN
-    if (curRow < randomRow) {
-      pushHat(Hat::DOWN, 50);
-      curRow = curRow + 1;
-    }
-    // UP
-    else if (curRow > randomRow) {
-      pushHat(Hat::UP, 50);
-      curRow = curRow - 1;
-    }
-  }
-  pushButton(Button::A, 50); // Select the Cup
-
-  int randomTrackNum = random(0,4);
-  tm.display(3, randomTrackNum);
-  delay(1000);
-  for(int i = 0; i < randomTrackNum; i++) 
-  {
-    pushHat(Hat::RIGHT, 200);
-  }
-
-  pushButton(Button::A, 50); // Select the Track
-
-  // We may have selected a track that does not exist so click for the other grouping of tracks and select again
-  pushButton(Button::L,25);
-  pushButton(Button::A, 500); // Select the Cup
-  for(int i = 0; i < randomTrackNum; i++) 
-  {
-    pushHat(Hat::RIGHT, 200);
-  }
-
-  pushButton(Button::A, 50); // Select the Track
-  ClearDisplay();
-  ClearDisplay();
-        
-        
-  
-  
-  
   
 }
 
@@ -1151,6 +1147,13 @@ void AutomatedMultiplayerSelection()
   delay(1000);
   // Start the game
   pushButton(Button::A,25);
+
+  int timer = 8;
+  while(timer > 0) {
+    DisplayFullTwoDigitNumber(timer);
+    timer--;
+    delay(1000);
+  }
   
   AutomatedRepairingToUser();
 }
